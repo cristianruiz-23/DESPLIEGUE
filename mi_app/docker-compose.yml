@@ -32,7 +32,7 @@ services:
   jenkins:
     image: jenkins/jenkins:lts
     ports:
-      - "8080:8080"
+      - "8094:8080"
     volumes:
       - jenkins_home:/var/jenkins_home
     user: root
