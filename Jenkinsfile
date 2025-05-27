@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'agent1' }  // Ejecuta el pipeline en el agente con etiqueta 'agent1'
+    agent { label 'Agent1' }  // Ejecuta el pipeline en el agente con etiqueta 'agent1'
 
     environment {
         REMOTE_HOST = "ruiz@172.18.187.111"
