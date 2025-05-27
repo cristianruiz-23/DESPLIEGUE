@@ -9,16 +9,20 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
     depends_on:
       - db
-  
+    networks:
+      - jenkins_net
+
   locust:
     build:
       context: ./locust
     ports:
       - "8089:8089"
-    depends_on:
-      - web
     environment:
       - LOCUST_HOST=http://web:8000
+    depends_on:
+      - web
+    networks:
+      - jenkins_net
 
   db:
     image: postgres:13
@@ -28,15 +32,87 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - jenkins_net
 
   jenkins:
     image: jenkins/jenkins:lts
+    container_name: jenkins
+    privileged: true
+    user: root
     ports:
       - "8094:8080"
+      - "50000:50000"  # puerto para agentes JNLP
     volumes:
       - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JENKINS_OPTS=--prefix=/jenkins
+    networks:
+      - jenkins_net
+
+  jenkins-agent-1:
+    image: jenkins/inbound-agent:latest
+    container_name: jenkins-agent-1
     user: root
+    privileged: true
+    depends_on:
+      - jenkins
+    environment:
+      - JENKINS_URL=http://jenkins:8080/jenkins
+      - JENKINS_AGENT_NAME=agent1
+      - JENKINS_SECRET=agent1_secret
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins_agent_1_home:/home/jenkins/agent
+    networks:
+      - jenkins_net
+
+  jenkins-agent-2:
+    image: jenkins/inbound-agent:latest
+    container_name: jenkins-agent-2
+    user: root
+    privileged: true
+    depends_on:
+      - jenkins
+    environment:
+      - JENKINS_URL=http://jenkins:8080/jenkins
+      - JENKINS_AGENT_NAME=agent2
+      - JENKINS_SECRET=agent2_secret
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins_agent_2_home:/home/jenkins/agent
+    networks:
+      - jenkins_net
+
+  ubuntu-deploy:
+    image: ubuntu:20.04
+    container_name: ubuntu-deploy
+    ports:
+      - "2222:22"
+      - "8001:80"
+    volumes:
+      - app_deployment:/app
+    networks:
+      - jenkins_net
+    command: >
+      bash -c "
+        apt-get update && 
+        apt-get install -y openssh-server &&
+        mkdir -p /run/sshd &&
+        echo 'root:password' | chpasswd &&
+        sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config &&
+        service ssh start &&
+        tail -f /dev/null
+      "
+
+networks:
+  jenkins_net:
+    driver: bridge
 
 volumes:
   postgres_data:
   jenkins_home:
+  jenkins_agent_1_home:
+  jenkins_agent_2_home:
+  app_deployment:
