@@ -60,7 +60,7 @@ services:
       - jenkins
     environment:
       - JENKINS_URL=http://jenkins:8080/jenkins
-      - JENKINS_AGENT_NAME=agent1
+      - JENKINS_AGENT_NAME=Agent1
       - JENKINS_SECRET=5f040be1d5d7374d66ad1bc96a03e9bd63989941d23e2d065031792e0b5f55b1
 
     volumes:
