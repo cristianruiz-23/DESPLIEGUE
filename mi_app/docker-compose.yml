@@ -61,30 +61,15 @@ services:
     environment:
       - JENKINS_URL=http://jenkins:8080/jenkins
       - JENKINS_AGENT_NAME=agent1
-      - JENKINS_SECRET=agent1_secret
+      - JENKINS_SECRET=5f040be1d5d7374d66ad1bc96a03e9bd63989941d23e2d065031792e0b5f55b1
+
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - jenkins_agent_1_home:/home/jenkins/agent
     networks:
       - jenkins_net
 
-  jenkins-agent-2:
-    image: jenkins/inbound-agent:latest
-    container_name: jenkins-agent-2
-    user: root
-    privileged: true
-    depends_on:
-      - jenkins
-    environment:
-      - JENKINS_URL=http://jenkins:8080/jenkins
-      - JENKINS_AGENT_NAME=agent2
-      - JENKINS_SECRET=agent2_secret
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - jenkins_agent_2_home:/home/jenkins/agent
-    networks:
-      - jenkins_net
-
+ 
   ubuntu-deploy:
     image: ubuntu:20.04
     container_name: ubuntu-deploy
