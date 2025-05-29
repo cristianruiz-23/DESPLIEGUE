@@ -16,7 +16,7 @@ pipeline {
 
         stage('Desplegar en servidor remoto') {
             steps {
-               ssh-agent -s(['ruiz-ssh-key']) {
+                sshagent(['ruiz-ssh-key']) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no $REMOTE_HOST "
                             cd $PROJECT_PATH &&
